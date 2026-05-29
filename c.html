@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voice Overlay</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  overflow:hidden;
+  background:#000;
+  height:100vh;
+  font-family:Arial;
+}
+
+/* FUNDO ANIMADO */
+.bg{
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(circle at center,
+    rgba(16,163,127,.4),
+    transparent 40%),
+    #020617;
+
+  animation:pulse 3s infinite alternate;
+}
+
+@keyframes pulse{
+  from{
+    transform:scale(1);
+    filter:hue-rotate(0deg);
+  }
+
+  to{
+    transform:scale(1.2);
+    filter:hue-rotate(90deg);
+  }
+}
+
+/* PARTÍCULAS */
+.particle{
+  position:absolute;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:white;
+  opacity:.7;
+  animation:float linear infinite;
+}
+
+@keyframes float{
+  from{
+    transform:translateY(100vh);
+  }
+
+  to{
+    transform:translateY(-10vh);
+  }
+}
+
+/* OVERLAY */
+.overlay{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  z-index:10;
+  backdrop-filter:blur(20px);
+}
+
+h1{
+  color:white;
+  font-size:60px;
+  margin-bottom:20px;
+}
+
+button{
+  border:none;
+  padding:18px 30px;
+  border-radius:20px;
+  background:#10a37f;
+  color:white;
+  font-size:20px;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+
+<div id="particles"></div>
+
+<div class="overlay">
+  <h1>Voice Mode</h1>
+
+  <button onclick="openVoice()">
+    Abrir ChatGPT Voice
+  </button>
+</div>
+
+<script>
+
+// partículas
+const particles = document.getElementById("particles");
+
+for(let i=0;i<80;i++){
+
+  const p = document.createElement("div");
+
+  p.className = "particle";
+
+  p.style.left = Math.random()*100+"vw";
+
+  p.style.animationDuration =
+    5 + Math.random()*10 + "s";
+
+  p.style.opacity = Math.random();
+
+  particles.appendChild(p);
+}
+
+function openVoice(){
+
+  // abre popup/janela
+  window.open(
+    "https://chatgpt.com/voice",
+    "_blank",
+    "width=500,height=800"
+  );
+}
+
+</script>
+
+</body>
+</html>
