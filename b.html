@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audio Reactive Visualizer</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: radial-gradient(circle at center, #111827, #020617);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .ui {
+      position: fixed;
+      z-index: 10;
+      text-align: center;
+      backdrop-filter: blur(12px);
+      background: rgba(255,255,255,0.05);
+      padding: 25px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.1);
+      width: 90%;
+      max-width: 420px;
+    }
+
+    h1 {
+      margin-bottom: 12px;
+      font-size: 28px;
+    }
+
+    p {
+      opacity: 0.8;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    button {
+      border: none;
+      background: #10a37f;
+      color: white;
+      padding: 14px 22px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    .status {
+      margin-top: 15px;
+      opacity: 0.7;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="canvas"></canvas>
+
+  <div class="ui">
+    <h1>Audio Visualizer</h1>
+
+    <p>
+      Captura o áudio do navegador/celular e anima em tempo real.
+      Funciona melhor no Chrome Android e desktop.
+    </p>
+
+    <button id="startBtn">
+      Ativar Áudio
+    </button>
+
+    <div class="status" id="status">
+      aguardando permissão...
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width;
+    let height;
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    const statusText = document.getElementById('status');
+
+    async function startAudio() {
+      try {
+        // Captura áudio do sistema/navegador
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: true
+        });
+
+        const audioContext = new AudioContext();
+        const source = audioContext.createMediaStreamSource(stream);
+
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 512;
+
+        source.connect(analyser);
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        statusText.innerText = 'áudio detectado';
+
+        animate();
+
+        function animate() {
+          requestAnimationFrame(animate);
+
+          analyser.getByteFrequencyData(dataArray);
+
+          ctx.clearRect(0, 0, width, height);
+
+          const centerX = width / 2;
+          const centerY = height / 2;
+
+          let avg = dataArray.reduce((a, b) => a + b, 0) / bufferLength;
+
+          const radius = 100 + avg * 0.8;
+
+          // Glow
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius + 40, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(16,163,127,${avg / 400})`;
+          ctx.fill();
+
+          // Núcleo
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+          ctx.fillStyle = '#10a37f';
+          ctx.fill();
+
+          // Barras radiais
+          const bars = 180;
+
+          for (let i = 0; i < bars; i++) {
+            const angle = (Math.PI * 2 / bars) * i;
+
+            const value = dataArray[i % bufferLength];
+
+            const barLength = value * 1.4;
+
+            const x1 = centerX + Math.cos(angle) * radius;
+            const y1 = centerY + Math.sin(angle) * radius;
+
+            const x2 = centerX + Math.cos(angle) * (radius + barLength);
+            const y2 = centerY + Math.sin(angle) * (radius + barLength);
+
+            ctx.strokeStyle = `hsl(${i * 2}, 100%, 60%)`;
+            ctx.lineWidth = 3;
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+          }
+        }
+
+      } catch (err) {
+        console.error(err);
+        statusText.innerText = 'permissão negada ou não suportado';
+      }
+    }
+
+    document.getElementById('startBtn').addEventListener('click', startAudio);
+  </script>
+
+</body>
+</html>
