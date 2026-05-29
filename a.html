@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navegador Interno</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #111827;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .topbar {
+      height: 60px;
+      background: #1f2937;
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    input {
+      flex: 1;
+      height: 40px;
+      border: none;
+      border-radius: 12px;
+      padding: 0 15px;
+      background: #374151;
+      color: white;
+      font-size: 15px;
+    }
+
+    button {
+      height: 40px;
+      padding: 0 18px;
+      border: none;
+      border-radius: 12px;
+      background: #10a37f;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .browser {
+      width: 100%;
+      height: calc(100vh - 60px);
+      border: none;
+    }
+
+    .warning {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: white;
+      background: #111827;
+      text-align: center;
+      padding: 30px;
+    }
+
+    .warning h2 {
+      margin-bottom: 15px;
+    }
+
+    .warning p {
+      opacity: 0.8;
+      max-width: 700px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <input id="url" value="https://chatgpt.com/voice">
+    <button onclick="abrir()">Abrir</button>
+  </div>
+
+  <!--
+    IMPORTANTE:
+    iframe NÃO consegue abrir chatgpt.com
+    porque o próprio ChatGPT bloqueia.
+
+    Isto aqui funciona apenas em:
+    - Electron
+    - Tauri
+    - Capacitor
+    - Cordova
+    - Android WebView
+
+    Em navegador normal NÃO funciona.
+  -->
+
+  <webview
+    id="browser"
+    class="browser"
+    src="https://chatgpt.com/voice"
+    allowpopups>
+  </webview>
+
+  <div class="warning" id="warning">
+    <h2>Use Electron ou WebView</h2>
+
+    <p>
+      Navegadores comuns não permitem criar um navegador real dentro do HTML.
+      Para abrir o ChatGPT Voice dentro da sua interface,
+      você precisa rodar este arquivo em Electron, Android WebView,
+      Capacitor, Cordova ou Tauri.
+    </p>
+  </div>
+
+  <script>
+    function abrir() {
+      const url = document.getElementById('url').value;
+
+      const browser = document.getElementById('browser');
+
+      if (browser) {
+        browser.src = url;
+      }
+    }
+
+    // Detecta Electron
+    const isElectron = navigator.userAgent.toLowerCase().includes('electron');
+
+    if (isElectron) {
+      document.getElementById('warning').style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>
